@@ -13,7 +13,7 @@ class SongList:
         self.names: list = []
         self.vox_files: list = []
         self.bgm_files: list = []
-        self.song_dicts: list = []  # 本地音乐字典列表：id name vox bgm
+        self.song_dicts: list = []  # List of local music dictionaries：id name vox bgm
         self.load_song_text()
         self.cur_song_index = -1
 
@@ -40,7 +40,7 @@ class SongList:
     def search_song(self, query: str = None):
         try:
             if query is None or query == '':
-                print("请输入：‘点歌X’(如：点歌1/点歌Tear)")
+                print("Please enter: ‘Song Request X’ (for example: Request Song 1/Request Song Tear)")
                 return None
             else:
                 if self.song_dicts:
@@ -60,12 +60,12 @@ class SongList:
                             return song_dict
                         cur_song_index += 1
                     else:
-                        print("抱歉！未找到该歌曲~")
+                        print("Feel sorry! The song was not found~")
                         return None
                 else:
                     return None
         except Exception as e:
-            print(f"search_song报错:{e}")
+            print(f"search_song error: {e}")
             return None
 
 
@@ -233,7 +233,7 @@ class PureMusic:
         self.looping = False
 
     def load_music_files(self):
-        # 获取当前目录下的所有音频文件
+        # Get all audio files in the current directory
         file_path = self.music_dir
         for filename in os.listdir(file_path):
             if filename.endswith('Msc.mp3') or filename.endswith('Msc.wav'):
@@ -263,7 +263,7 @@ class PureMusic:
 
     def loop_music(self):
         if not self.music_files:
-            print("无纯音乐文件！")
+            print("No pure music files!")
         else:
             self.looping = True
             first_time = True
@@ -280,7 +280,7 @@ class PureMusic:
                         first_time = True
                     time.sleep(0.5)
                 except Exception as e:
-                    print(f"loop_music报错:{e}")
+                    print(f"loop_music error: {e}")
                     self.looping = False
     
     def quit(self):
@@ -314,8 +314,8 @@ class Display:
         cur_show_index = self.song_list.cur_song_index
         if -1 == cur_show_index:
             color = (255, 255, 0)
-            text = self.font.render(f"发弹幕\"点歌+序号\"点歌（如:点歌3）", True, color)
-            # text = self.font.render(f"弹幕'点歌X'(如:点歌3/点歌爱你)", True, color)
+            text = self.font.render(f"Post a barrage\"song request+serial number\" to request a song (for example: song request 3)", True, color)
+            # text = self.font.render(f"弹幕'点歌X'(如:点歌3/点歌爱你)", True, color) # FIXME: Didn't translate properly. Left as is
             self.screen.blit(text, (10, y))
         else:
             color = (0, 255, 255)
@@ -375,7 +375,7 @@ class Display:
 
     def display_list(self):
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        pygame.display.set_caption("优俊歌者")
+        pygame.display.set_caption("Excellent singer")
         y = self.pos_y
         self.is_running = True
         while self.is_running:  # T/F
@@ -398,7 +398,7 @@ class Display:
 
                 self.clock.tick(30)
             except Exception as e:
-                print(f"display_list报错:{e}")
+                print(f"display_list error: {e}")
                 self.is_running = False  # False
 
 
@@ -432,9 +432,9 @@ class SongMixer:
         try:
             if len(self.song_list.song_dicts) != 0:
                 command = _msg
-                if command.startswith("点歌"):
+                if command.startswith("Song request"):
                     if self.song_plr.playing:
-                        print("正在播放，不可换歌！")
+                        print("Now playing, cannot change the song!")
                     else:
                         query = command[2:]
                         if -1 != self.song_list.cur_song_index:
@@ -442,28 +442,28 @@ class SongMixer:
 
                         self.song_plr.play(query)
 
-                elif command.startswith("#切歌"):
+                elif command.startswith("#cut song"):
                     if self.song_plr.playing:
                         self.song_plr.stop()
                     else:
-                        print("请先'点歌X'(如:点歌8/点歌Win)")
-                elif command == "#打断唱歌":
+                        print("Please 'order song X' first (such as: request song 8/demand song Win)")
+                elif command == "#interrupt singing":
                     self.set_interrupted(True)
-                elif command == "#继续唱歌":
+                elif command == "#keep singing":
                     self.set_interrupted(False)
-                elif "#暂停" == command:
+                elif "#pause" == command:
                     self.song_plr.pause()
-                elif "#继续" == command:
+                elif "#continue" == command:
                     self.song_plr.resume()
-                elif "#退出" == command:
+                elif "#quit" == command:
                     should_exit = True
                 else:
-                    print("无效命令！")
+                    print("Invalid command!")
             else:
-                print("歌单为空！")
+                print("The playlist is empty!")
                 should_exit = True
         except Exception as e:
-            print(f"报menu错:{e}")
+            print(f"Report menu error: {e}")
             should_exit = True
         finally:
             return should_exit
@@ -472,17 +472,17 @@ class SongMixer:
         while True:
             try:
                 if len(self.song_list.song_dicts) != 0:
-                    command = input("请输入命令：点歌X(X:歌名/序号) 切歌 辣条 歌唱 暂停 继续 退出")
+                    command = input("Please enter the command: Request song")
                     if command == "esc":
                         break
                     should_exit = self.run(command)
                     if should_exit:
                         break
                 else:
-                    print("歌单为空！")
+                    print("The playlist is empty!")
                     break
             except Exception as e:
-                print(f"报menu错:{e}")
+                print(f"Report menu error: {e}")
                 break
 
         self.close()
@@ -520,10 +520,10 @@ class SongSingerProcess(multiprocessing.Process):
         song_mixer.close()
 
     def on_start_singing(self):
-        self.cmd_queue.put("#唱歌开始")
+        self.cmd_queue.put("#Singing begins")
 
     def on_stop_singing(self):
-        self.cmd_queue.put("#唱歌结束")
+        self.cmd_queue.put("#End of singing")
 
 
 class SongSingerTestProcess(multiprocessing.Process):
@@ -559,14 +559,14 @@ if __name__ == '__main__':
 
     song_singer_test_process.start()
 
-    cmd = input("输入命令1or2：1、指令菜单 2、暴力测试")
+    cmd = input("Enter command 1or2: 1. Command menu 2. Brutal test")
 
     if cmd == '1':
         while True:
-            cmd = input("请输入命令：点歌X(X:歌名/序号) #切歌 #暂停 #继续 #退出")
+            cmd = input("Please enter the command: Request a song")
             sing_queue.put(cmd)
             
-            if cmd == "#退出":
+            if cmd == "#quit":
                 time.sleep(1.0)
 
             if not song_singer_test_process.is_alive():
@@ -575,9 +575,9 @@ if __name__ == '__main__':
     elif cmd == '2':
         count = 8
         while True:
-            x = ['#切歌', '点歌End', '点歌Tear']
+            x = ['# Cut the song', 'Song requestEnd', 'Song request Tear']
             msg = random.sample(x, 1)[0]
-            print(f"当前弹幕：{msg}")
+            print(f"Current barrage：{msg}")
             sing_queue.put(msg)
             time.sleep(1)
             count = count - 1
@@ -585,7 +585,7 @@ if __name__ == '__main__':
                 sing_queue.put(None)
                 break 
     else:
-        print("无效命令！！！")
+        print("Invalid command! ! !")
         sing_queue.put(None)
 
-    print("退出")
+    print("quit")

@@ -25,7 +25,7 @@ class DanmakuProcess(multiprocessing.Process):
         self.handler = ResponseHandler(greeting_queue, chat_queue, thanks_queue, app_state, self.enable_response)
 
         # https://blog.csdn.net/qq_28821897/article/details/132002110
-        # 这里填一个已登录账号的cookie。不填cookie也可以连接，但是收到弹幕的用户名会打码，UID会变成0
+        # Fill in a cookie with a logged in account here. You can connect without filling in the cookie, but the username that receives the barrage will be coded and the UID will become 0.
         self.SESSDATA = ''
         self.session = None
 
@@ -106,9 +106,9 @@ class ResponseHandler(blivedm.BaseHandler):
             print(f"{user_name}进场")
 
             if self.app_state.value == AppState.CHAT:
-                # msg = f"（{user_name}进入了你的直播间。）"
-                # msg = f"主播好！我是{user_name}，来你的直播间了！"
-                msg = f"主播好！我是{user_name}，我来了！"
+                # msg = f"({user_name} entered your live broadcast room.)"
+                # msg = f"Hello anchor! I am {user_name}, coming to your live broadcast room!"
+                msg = f"Hello anchor! I am {user_name}, here I come!"
                 print(f"[{client.room_id} INTERACT_WORD] {msg}")
 
                 # if self.is_response_enabled():
@@ -120,11 +120,11 @@ class ResponseHandler(blivedm.BaseHandler):
                     # self.greeting_queue.put(task)
 
         elif msg_type == 2:
-            print(f"{user_name}关注")
+            print(f"{user_name}Follow")
             if (self.app_state.value == AppState.CHAT or 
                 self.app_state.value == AppState.SING):
-                # msg = f"（{user_name}关注了你的直播间。）"
-                msg = f"我是{user_name}，刚刚关注了你的直播间！"
+                # msg = f"({user_name} followed your live broadcast room.)"
+                msg = f"I am {user_name} and I just followed your live broadcast room!"
                 print(f"[INTERACT_WORD] {msg}")
 
                 if self.enable_response.value:
@@ -139,12 +139,12 @@ class ResponseHandler(blivedm.BaseHandler):
     # 点赞消息回调
     async def __like_callback(self, client: blivedm.BLiveClient, command: dict):
         user_name = command['data']['uname']
-        print(f"{user_name}点赞")
+        print(f"{user_name}like")
         print(f"[LIKE] {user_name}")
 
         channel = 'default'
-        # msg = f"我是{user_name}，刚刚在你的直播间点了赞哦！"
-        msg = f"我是{user_name}，给你点赞！"
+        # msg = f"I am {user_name} and I just liked your live broadcast!"
+        msg = f"I am {user_name}, give you a thumbs up!"
         if self.enable_response.value:
             task = ChatTask(user_name, msg, channel)
 
@@ -172,16 +172,16 @@ class ResponseHandler(blivedm.BaseHandler):
         gift_name = message.gift_name
         gift_num = message.num
 
-        print(f'[{client.room_id} GIFT] {user_name} 赠送{gift_name}x{gift_num}'
-              f' （{message.coin_type}瓜子x{message.total_coin}）')
+        print(f'[{client.room_id} GIFT] {user_name} give away{gift_name}x{gift_num}'
+              f' （{message.coin_type}Melon seedsx{message.total_coin}）')
         
         if (self.app_state.value == AppState.CHAT or 
             self.app_state.value == AppState.SING):
 
             channel = 'default'
         
-            # msg = f"（{user_name}投喂了{gift_num}个{gift_name}礼物给你。）"
-            msg = f"我是{user_name}，刚刚投喂了{gift_num}个{gift_name}礼物给你！"
+            # msg = f"({user_name} fed you {gift_num} {gift_name} gifts.)"
+            msg = f"I am {user_name}, and I just gave you {gift_num} {gift_name} gifts!"
             if self.enable_response.value:
                 task = ChatTask(user_name, msg, channel)
 
@@ -200,7 +200,7 @@ class ResponseHandler(blivedm.BaseHandler):
                     t.start()
 
     # async def _on_buy_guard(self, client: blivedm.BLiveClient, message: blivedm.GuardBuyMessage):
-    #     print(f'[{client.room_id}] {message.username} 购买{message.gift_name}')
+    #     print(f'[{client.room_id}] {message.username} Buy{message.gift_name}')
 
     # async def _on_super_chat(self, client: blivedm.BLiveClient, message: blivedm.SuperChatMessage):
-    #     print(f'[{client.room_id}] 醒目留言 ¥{message.price} {message.uname}：{message.message}')
+    #     print(f'[{client.room_id}] Eye-catching message ¥{message.price} {message.uname}：{message.message}')

@@ -23,7 +23,7 @@ class SubtitleBar():
         
         # https://www.tutorialspoint.com/python/tk_fonts.htm
         # #ffdb00
-        self.text = tk.Label(self.window, wraplength=1000, font=("Noto Sans SC", 32, "bold"), fg="#ffffff", bg=transparentcolor, text="这是字幕这是字幕这是字幕这是字幕这是字幕这是字幕这是字幕这是字幕")
+        self.text = tk.Label(self.window, wraplength=1000, font=("Noto Sans SC", 32, "bold"), fg="#ffffff", bg=transparentcolor, text="This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle This is the subtitle")
         self.text.place(relx=0.5, rely=0.5, anchor='center')
 
         # self.grip = ttk.Sizegrip(self.window)

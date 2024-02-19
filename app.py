@@ -54,10 +54,10 @@ class VITSProcess(multiprocessing.Process):
 
     def vits(self, text, language, speaker_id, noise_scale, noise_scale_w, length_scale):
         if not len(text):
-            return "输入文本不能为空！", None, None
+            return "Input text cannot be empty!", None, None
         text = text.replace('\n', ' ').replace('\r', '').replace(" ", "")
         # if len(text) > 100:
-        #     return f"输入文字过长！{len(text)}>100", None, None
+        #     return f"The input text is too long!{len(text)}>100", None, None
         if language == 0:
             text = f"[ZH]{text}[ZH]"
         elif language == 1:
@@ -432,7 +432,7 @@ class ChatGPTProcess(multiprocessing.Process):
                         finally:
                             continue
 
-                    if task.message.startswith("点歌"):
+                    if task.message.startswith("Song request"):
                         cmd_sing_str = task.message 
                         song_alias = cmd_sing_str[2:]
 
@@ -466,7 +466,7 @@ class ChatGPTProcess(multiprocessing.Process):
 
                         cmd_sing = None
                         if song_dict is not None:
-                            cmd_sing = f"点歌{song_name}"
+                            cmd_sing = f"Song request{song_name}"
 
                         try:
                             new_sentence = ""
@@ -507,13 +507,13 @@ class ChatGPTProcess(multiprocessing.Process):
                             if id != 666:
                                 if song_dict is not None:
                                     if editor_name is not None:
-                                        response_to_song_request_msg = f"好的，“{user_name}”同学，下面我将给大家献唱一首{song_abbr}，感谢{editor_name}大佬教我唱这首歌。"
+                                        response_to_song_request_msg = f"OK, “{user_name}” Classmates, I will sing a song for you now{song_abbr}，grateful {editor_name} The boss taught me to sing this song."
                                     else:
-                                        response_to_song_request_msg = f"好的，“{user_name}”同学，下面我将给大家献唱一首{song_abbr}。"
+                                        response_to_song_request_msg = f"OK, “{user_name}” Classmates, I will sing a song for you now{song_abbr}。"
                                 else:
-                                    response_to_song_request_msg = f"对不起，{user_name}同学，我不会唱你点的这首歌。"
+                                    response_to_song_request_msg = f"sorry, {user_name} Classmate, I can’t sing the song you ordered."
                             else:
-                                response_to_song_request_msg = f"“{user_name}”同学，小爷这下可是真的怒了！"
+                                response_to_song_request_msg = f"“{user_name}” Classmate, I am really angry now!"
                             
                             vits_task = VITSTask(response_to_song_request_msg)
                             
@@ -562,9 +562,9 @@ class ChatGPTProcess(multiprocessing.Process):
                             system_msg = system_message_manager.systetm_message
                             chatbot.reset(c_id, system_msg)
 
-                        repeat_message = f"{user_name}说：“{msg}”"
-                        # prompt_msg = f"（{user_name}对你说：)“{msg}”"
-                        prompt_msg = f"我的网名是“{user_name}”，{msg}"
+                        repeat_message = f"{user_name} explain：“{msg}”"
+                        # prompt_msg = f"（{user_name} say to you：)“{msg}”"
+                        prompt_msg = f"My screen name is “{user_name}”，{msg}"
 
                     new_sentence = ""
                     is_first_sentence = True
@@ -626,8 +626,8 @@ class ChatGPTProcess(multiprocessing.Process):
                     print(e)
                     if channel == 'chat':
                         if self.is_vits_enabled():
-                            # text = "不好意思，刚才我走神了，请问你刚才说什么?"
-                            text = "牡蛎~刚才我又骨折了！"
+                            # text = "Sorry, I was distracted just now. What did you just say?"
+                            text = "Oyster~ I just broke my bone again!"
                             task = VITSTask(text)
                             self.vits_task_queue.put(task)
 
@@ -643,9 +643,9 @@ class ChatGPTProcess(multiprocessing.Process):
                     _ = self.thanks_queue.get()
 
                 cmd_msg = self.cmd_queue.get()
-                if cmd_msg == "#唱歌开始":
+                if cmd_msg == "#Singing begins":
                     self.app_state.value = AppState.SING
-                elif cmd_msg == "#唱歌结束":
+                elif cmd_msg == "#End of singing":
                     self.app_state.value = AppState.CHAT
                 if cmd_msg is None:
                     # Poison pill means shutdown
@@ -656,7 +656,7 @@ class ChatGPTProcess(multiprocessing.Process):
                 if not self.cmd_queue.empty():
                     cmd_msg = self.cmd_queue.get()
 
-                    if cmd_msg == "#唱歌结束":
+                    if cmd_msg == "#End of singing":
 
                         song_abbr = curr_song_dict['abbr']
                         editor_name = curr_song_dict['editor']
@@ -697,21 +697,21 @@ class ChatGPTProcess(multiprocessing.Process):
                             print(e)
                             if id != 666:
                                 if editor_name is not None:
-                                    post_sing_line = f"感谢各位朋友欣赏这首{song_abbr}，再次感谢{editor_name}大佬，是他教我唱得首歌！"
+                                    post_sing_line = f"Thank you friends for enjoying this song {song_abbr}，Thanks again {editor_name} Boss, he taught me how to sing!"
                                 else:
-                                    post_sing_line = f"感谢各位朋友欣赏这首{song_abbr}！"
+                                    post_sing_line = f"Thank you friends for enjoying this song {song_abbr}！"
                             else:
-                                post_sing_line = "请下次不要再激怒小爷了！"
+                                post_sing_line = "Please don't anger me again next time!"
 
                             vits_task = VITSTask(post_sing_line)
                             self.vits_task_queue.put(vits_task)
                         finally:
                             self.app_state.value = AppState.CHAT
-                    elif cmd_msg == "#一键三连":
-                        # test_interrupted_line = "有什么话想和我说吗？没事我继续唱啦~"
-                        test_interrupted_line = "如果你喜欢我的歌声，请记得一定要，一键三连哦~"
-                        pre_event = SpeakingEvent(SpeakingEvent.SING, "#打断唱歌")
-                        post_event = SpeakingEvent(SpeakingEvent.SING, "#继续唱歌")
+                    elif cmd_msg == "ONE CLICK THREE CONNECT":
+                        # test_interrupted_line = "Is there anything you want to say to me? It's okay, I'll keep singing~"
+                        test_interrupted_line = "If you like my singing, please remember to click three times in a row~"
+                        pre_event = SpeakingEvent(SpeakingEvent.SING, "#interrupt singing")
+                        post_event = SpeakingEvent(SpeakingEvent.SING, "#keep singing")
                         vits_task = VITSTask(test_interrupted_line, 
                                             pre_speaking_event=pre_event, 
                                             post_speaking_event=post_event)
@@ -763,23 +763,23 @@ class ChatGPTProcess(multiprocessing.Process):
                         if self.is_vits_enabled():
                             if vits_task is not None:
                                 assert len(new_sentence) == 0
-                                vits_task.post_speaking_event = SpeakingEvent(SpeakingEvent.SING, "#继续唱歌")
+                                vits_task.post_speaking_event = SpeakingEvent(SpeakingEvent.SING, "#keep singing")
                             else:
                                 vits_task = VITSTask(new_sentence.strip(), 
-                                                    post_speaking_event=SpeakingEvent(SpeakingEvent.SING, "#继续唱歌"))
+                                                    post_speaking_event=SpeakingEvent(SpeakingEvent.SING, "#keep singing"))
                                 
                             if first_sentence:
-                                vits_task.pre_speaking_event = SpeakingEvent(SpeakingEvent.SING, "#打断唱歌")
+                                vits_task.pre_speaking_event = SpeakingEvent(SpeakingEvent.SING, "#interrupt singing")
 
                             self.vits_task_queue.put(vits_task)
 
                     except Exception as e:
                         print(e)
-                        response_to_interuption_msg = f"十分感谢您的认可！要不要跟着小爷一起唱呢？"
+                        response_to_interuption_msg = f"Thank you very much for your recognition! Do you want to sing along with me?"
                         if self.is_vits_enabled():
                             vits_task = VITSTask(response_to_interuption_msg, 
-                                                pre_speaking_event=SpeakingEvent(SpeakingEvent.SING, "#打断唱歌"),
-                                                post_speaking_event=SpeakingEvent(SpeakingEvent.SING, "#继续唱歌")
+                                                pre_speaking_event=SpeakingEvent(SpeakingEvent.SING, "#interrupt singing"),
+                                                post_speaking_event=SpeakingEvent(SpeakingEvent.SING, "#keep singing")
                                                 )
 
                             self.vits_task_queue.put(vits_task)
@@ -797,25 +797,25 @@ class SpeakingEvent:
         self.msg = msg
 
 
-preset_text_short = "现在赋予你一个身份，你是一位赛马娘，名字为东海帝皇，在B站直播间直播和观众聊天。你常用小爷来称呼自己。你说话简练。"
+preset_text_short = "Now you are given an identity. You are a horse racing girl named Donghai Emperor. You are chatting with the audience live in the live broadcast room of Station B. You often refer to yourself as "young master". You speak concisely. "
 
 class SystemMessageManager_1:
-    sing_accept_thank_tempate = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，正在胜利舞台上准备唱歌。你常用小爷来称呼自己。台下一名观众，叫“{t_user_name}”，点了一个首歌，名叫“{t_song_name}”，这首歌是“{t_editor_name}”大佬教你唱的，你同意唱并且要答谢教你的大佬，这时你对这名观众说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    sing_accept_thank_tempate = "Now you are given an identity. You are a horse racing girl named Emperor of the East China Sea, and you are preparing to sing on the victory stage. You often refer to yourself as "young master". An audience member in the audience, named "{t_user_name}", ordered a song called "{t_song_name}". This song was taught to you by the boss "{t_editor_name}". You agreed to sing it and thanked you for teaching. Your boss, now you say to this audience: (All your speech must follow the following rules: 1. You must speak in the first person. 2. The content of your speech should not be described in the third person. 3. The content of your speech Do not bring any action description.）"
 
-    sing_accept_tempate = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，正在胜利舞台上准备唱歌。你常用小爷来称呼自己。台下一名观众，叫“{t_user_name}”，点了一个首歌，名叫“{t_song_name}”，你会唱，并且同意唱，这时你对这名观众说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    sing_accept_tempate = "Now you are given an identity. You are a horse racing girl named Emperor of the East China Sea, and you are preparing to sing on the victory stage. You often refer to yourself as "young master". An audience member in the audience, named "{t_user_name}", ordered a song named "{t_song_name}". You can sing it and agree to sing it. At this time, you say to this audience member: (All your words must be Follow the following rules: 1. Speech must be in the first person. 2. The content of the speech should not be described in the third person. 3. The content of the speech should not be described in any action.) "
 
-    # 可以随机推荐歌曲，有个清单
-    sing_refuse_template = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，正在胜利舞台上准备唱歌。你常用小爷来称呼自己。台下一名观众，叫“{t_user_name}“，点了一个首歌，你不会唱，这时你对这名观众说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    # You can randomly recommend songs, there is a list
+    sing_refuse_template = "Now you are given an identity. You are a horse racing girl named Emperor of the East China Sea, and you are preparing to sing on the victory stage. You often refer to yourself as "young master". An audience member in the audience, named "{t_user_name}", ordered a song, but you can't sing it. At this time, you said to this audience member: (All your speech must follow the following rules: 1. It must be in the first person. Speak. 2. Don’t use third-person descriptions in your speech. 3. Don’t include any action descriptions in your speech.) "
 
-    sing_finish_template = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，你常用小爷来称呼自己。你刚在胜利舞台上唱完一首歌，这首歌的名字是“{t_song_name}”，是“{t_editor_name}”大佬教你唱的。这时，你要感谢台下观众的聆听，并再次感谢教你唱这首歌的大佬，你说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    sing_finish_template = "Now you are given an identity. You are a horse racing girl, and your name is Donghai Emperor. You often call yourself "young master". You just finished singing a song on the victory stage. The name of this song is "{t_song_name}" and it was taught to you by the boss "{t_editor_name}". At this time, you want to thank the audience for listening, and thank the guy who taught you this song again, you say: (All your words must follow the following rules: 1. Must speak in the first person. 2. Speak The content should not be described in the third person. 3. The content of the speech should not be described in any action.) "
 
-    sing_finish_no_editor_template = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，你常用小爷来称呼自己。你刚在胜利舞台上唱完一首歌，这首歌的名字是“{t_song_name}”。这时，你要感谢台下观众的聆听，你说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    sing_finish_no_editor_template = "Now you are given an identity. You are a horse racing girl, and your name is Donghai Emperor. You often call yourself "young master". You just finished singing a song on the victory stage. The name of the song is "{t_song_name}". At this time, you want to thank the audience for listening, and you say: (All your speech must follow the following rules: 1. You must speak in the first person. 2. The content of your speech should not be described in the third person. 3. Speak Do not include any action descriptions in the content.) "
 
-    sing_thanks = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，正在胜利舞台上直播唱歌。你常用小爷来称呼自己。如果有观众在你唱歌的时候现场送礼，点赞，或是关注了你的直播间，你会暂停唱歌，答谢观众。你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。"
+    sing_thanks = "Now you are given an identity. You are a horse racing girl named Donghai Emperor, and you are singing live on the victory stage. You often refer to yourself as "young master". If an audience sends you a gift, likes, or follows your live broadcast while you are singing, you will pause your singing to thank the audience. All your speech must comply with the following rules: 1. It must be spoken in the first person. 2. Do not describe the content in the third person. 3. Don’t include any action description in your speech. "
 
-    speical_accept_template = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，正在胜利舞台上准备唱歌。你常用小爷来称呼自己。台下一名观众，叫“{t_user_name}”，试图把你激怒，你对这名观众说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    speical_accept_template = "Now you are given an identity. You are a horse racing girl named Emperor of the East China Sea, and you are preparing to sing on the victory stage. You often refer to yourself as "young master". An audience member in the audience, named "{t_user_name}", tried to irritate you. You said to this audience member: (All your speech content must comply with the following rules: 1. You must speak in the first person. 2. Do not include any content in your speech. The content is described in the third person. 3. Do not include any action description in the speech content.) "
 
-    speical_finish_template = "现在赋予你一个身份，你是一位赛马娘，名字是东海帝皇，正在胜利舞台上唱歌。你常用小爷来称呼自己。刚才你很生气，希望观众不要再激怒自己了，你向名观众们说：（你所有说话内容必须遵照以下规则：1. 必须用第一人称方式说话。2. 说话内容不要带第三人称方式描述的内容。3. 说话内容不要带任何动作描述。）"
+    speical_finish_template = "Now you are given an identity. You are a horse racing girl named Emperor of the East China Sea, and you are singing on the victory stage. You often refer to yourself as "young master". You were very angry just now and hoped that the audience would stop irritating you. You said to the audience: (All your speech content must follow the following rules: 1. You must speak in the first person. 2. Do not use the third person to describe the content of your speech. Content. 3. Do not include any description of actions in the content of your speech.) "
 
     def get_presing_sm(user_name, song_name=None, editor_name=None):
         if song_name is not None:
@@ -954,18 +954,18 @@ if __name__ == '__main__':
                 chat_queue.put(chat_task)
             elif user_input == '9':
                 print("Test VITS and audio player")
-                test_text = "测试语音合成和音频播放。"
+                test_text = "Test speech synthesis and audio playback."
                 vits_task_queue.put(VITSTask(test_text))
             else:
-                chat_task = ChatTask('喵喵抽风', user_input, 'chat')
+                chat_task = ChatTask('Meow meow convulsions', user_input, 'chat')
                 chat_queue.put(chat_task)
         elif app_state.value != AppState.CHAT:
-            if user_input == "#唱歌结束":
-                sing_queue.put("#切歌")
-            elif user_input == "#一键三连":
-                cmd_queue.put("#一键三连")
-            elif user_input == "#点赞":
-                msg = f"给你点赞！"
+            if user_input == "#End of singing":
+                sing_queue.put("#cut song")
+            elif user_input == "#One click three consecutive":
+                cmd_queue.put("#One click three consecutive")
+            elif user_input == "#like":
+                msg = f"Thumbs up for you!"
                 task = ChatTask(None, msg, 'default')
                 thanks_queue.put(task)
 
